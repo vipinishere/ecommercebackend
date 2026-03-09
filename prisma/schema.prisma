@@ -1,0 +1,663 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum WalletReferenceType {
+  DEPOSIT
+  ORDER
+  REFUND
+  RECHARGE
+  CASHBACK
+}
+
+enum WalletTransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum ReturnPolicyType {
+  NO_RETURN
+  REPLACEMENT_ONLY
+  RETURN_AND_REFUND
+}
+
+enum ShipmentStatus {
+  PROCESSING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentType {
+  COD
+  CARD
+  UPI
+  WALLET
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// USERS
+
+model User {
+  id                String    @id @default(uuid())
+  name              String    @db.VarChar(100)
+  email             String    @unique @db.VarChar(150)
+  passwordHash      String    @map("password_hash")
+  primaryNumber     String    @db.VarChar(15)
+  alternativeNumber String?   @db.VarChar(15)
+  isPrimeMember     Boolean   @default(false)
+  primeType         String?
+  primeExpiry       DateTime?
+  rewardPoints      Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  addresses          Address[]
+  cartItems          CartItem[]
+  wishlists          Wishlist[]
+  orders             Order[]
+  reviews            Review[]
+  walletAccount      WalletAccount?
+  cards              CardDetail[]
+  paymentMethods     PaymentMethod[]
+  watchHistory       WatchHistory[]
+  transactionDetails TransactionDetail[]
+}
+
+// ADDRESSES
+
+model Address {
+  id                     String   @id @default(uuid())
+  userId                 String //foreign key
+  name                   String
+  phoneNumber            String
+  alternativePhoneNumber String?
+  addressLine1           String
+  addressLine2           String?
+  city                   String
+  state                  String
+  postalCode             String
+  country                String
+  isDefault              Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  // foreign key relation
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model WalletAccount {
+  id             String              @id @default(uuid())
+  userId         String              @unique
+  currentBalance Decimal             @db.Decimal(12, 2)
+  updatedAt      DateTime            @updatedAt
+  user           User                @relation(fields: [userId], references: [id])
+  transactions   WalletTransaction[]
+}
+
+model WalletTransaction {
+  id                      String                  @id @default(uuid())
+  walletId                String // foreign key
+  transactionType         TransactionType
+  referenceType           WalletReferenceType
+  referenceId             String?
+  amount                  Decimal                 @db.Decimal(12, 2)
+  balanceAfterTransaction Decimal                 @db.Decimal(12, 2)
+  status                  WalletTransactionStatus
+  createdAt               DateTime                @default(now())
+
+  // relation
+  wallet WalletAccount @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+// WISHLIST
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String   @default("My Wishlist")
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relation (many to one)
+  user User @relation(fields: [userId], references: [id])
+
+  // relation (one to many relation)
+  items WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(uuid())
+  wishlistId String
+  productId  String
+  variantId  String?
+  note       String?
+  addedAt    DateTime @default(now())
+
+  // relation (many to one)
+  wishlist Wishlist        @relation(fields: [wishlistId], references: [id])
+  product  Product         @relation(fields: [productId], references: [id])
+  variant  ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@unique([wishlistId, productId])
+}
+
+// CART
+
+model CartItem {
+  id        String @id @default(uuid())
+  userId    String
+  productId String
+  variantId String
+
+  quantity  Int      @default(1)
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relation (many to one)
+  user    User           @relation(fields: [userId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([userId, variantId])
+  @@index([userId])
+  @@index([productId])
+}
+
+// CATEGORIES
+
+model Category {
+  id                 String              @id @default(uuid())
+  name               String              @db.VarChar(150)
+  description        String?
+  parentId           String?
+  createdAt          DateTime            @default(now())
+  parent             Category?           @relation("categoryParent", fields: [parentId], references: [id])
+  children           Category[]          @relation("categoryParent")
+  updatedAt          DateTime            @updatedAt
+  // one to many relation with product
+  products           Product[]
+  categoryAttributes CategoryAttribute[]
+}
+
+// SELLERS
+
+model Seller {
+  id           String @id @default(uuid())
+  businessName String
+  contactEmail String @unique
+  contactPhone String
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  // one to many
+  products   Product[]
+  orderItems OrderItem[]
+}
+
+// PRODUCTS
+
+model Product {
+  id           String  @id @default(uuid())
+  internalName String
+  seoTitle     String?
+  description  String?
+
+  categoryId String
+  sellerId   String
+
+  mrp             Decimal  @db.Decimal(10, 2)
+  discountPercent Decimal? @db.Decimal(5, 2)
+
+  sku String? // seller based token
+
+  giftOptionAvailable Boolean @default(false)
+  packagingType       String?
+
+  isFreeDelivery  Boolean @default(false)
+  isPayOnDelivery Boolean @default(false)
+
+  returnPolicyId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id])
+  seller   Seller   @relation(fields: [sellerId], references: [id])
+
+  images                 ProductImage[]
+  variants               ProductVariant[]
+  reviews                Review[]
+  specifications         ProductSpecification[]
+  priceHistory           ProductPriceHistory[]
+  wishlistItems          WishlistItem[]
+  cartItems              CartItem[]
+  productRatingSummaries ProductRatingSummary[]
+  watchHistories         WatchHistory[]
+  orderItems             OrderItem[]
+  returnPolicy           ReturnPolicy?          @relation(fields: [returnPolicyId], references: [id])
+}
+
+// PRODUCT IMAGES
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  imageUrl  String
+  altText   String?
+
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+// PRODUCT VARIANTS
+
+model ProductVariant {
+  id        String @id @default(uuid())
+  productId String
+
+  sku         String  @unique
+  variantName String?
+
+  color   String?
+  size    String?
+  storage String?
+
+  mrp          Decimal @db.Decimal(10, 2)
+  sellingPrice Decimal @db.Decimal(10, 2)
+
+  stockQuantity Int     @default(0)
+  isActive      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product       Product        @relation(fields: [productId], references: [id])
+  wishlistItems WishlistItem[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+}
+
+// PRODUCT PRICE HISTORY
+
+model ProductPriceHistory {
+  id        String @id @default(uuid())
+  productId String
+
+  mrp             Decimal @db.Decimal(12, 2)
+  discountPercent Decimal @db.Decimal(5, 2)
+  sellingPrice    Decimal @db.Decimal(12, 2)
+
+  validFrom DateTime
+  validTo   DateTime?
+
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId, validFrom])
+}
+
+// SPECIFICATIONS
+
+model SpecificationGroup {
+  id   String @id @default(uuid())
+  name String
+
+  createdAt  DateTime                 @default(now())
+  attributes SpecificationAttribute[]
+}
+
+model SpecificationAttribute {
+  id                    String                 @id @default(uuid())
+  groupId               String
+  name                  String
+  dataType              String
+  createdAt             DateTime               @default(now())
+  group                 SpecificationGroup     @relation(fields: [groupId], references: [id])
+  categoryAttributes    CategoryAttribute[]
+  productSpecifications ProductSpecification[]
+}
+
+model CategoryAttribute {
+  id          String                 @id @default(uuid())
+  categoryId  String
+  attributeId String
+  isRequired  Boolean
+  createdAt   DateTime               @default(now())
+  category    Category               @relation(fields: [categoryId], references: [id])
+  attribute   SpecificationAttribute @relation(fields: [attributeId], references: [id])
+
+  @@unique([categoryId, attributeId])
+}
+
+model ProductSpecification {
+  id          String @id @default(uuid())
+  productId   String
+  attributeId String
+
+  valueText    String?
+  valueNumber  Decimal? @db.Decimal(10, 4)
+  valueBoolean Boolean?
+
+  createdAt DateTime @default(now())
+
+  product   Product                @relation(fields: [productId], references: [id])
+  attribute SpecificationAttribute @relation(fields: [attributeId], references: [id])
+
+  @@unique([productId, attributeId])
+}
+
+// ORDERS
+
+model Order {
+  id          String @id @default(uuid())
+  orderNumber String @unique
+  userId      String
+
+  orderStatus OrderStatus @default(PENDING)
+
+  totalItemsAmount Decimal  @db.Decimal(10, 2)
+  shippingCharge   Decimal  @db.Decimal(10, 2)
+  codFee           Decimal?
+  discountAmount   Decimal?
+
+  grandTotal Decimal @db.Decimal(10, 2)
+
+  placedAt    DateTime?
+  paidAt      DateTime?
+  deliveredAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // many to one
+  user User @relation(fields: [userId], references: [id])
+
+  // one to many
+  items     OrderItem[]
+  shipments Shipment[]
+  payments  OrderPayment[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  sellerId  String
+  variantId String?
+
+  productNameSnapshot String
+  productSkuSnapshot  String
+
+  quantity Int
+
+  unitPriceAtPurchase Decimal @db.Decimal(10, 2)
+  totalPrice          Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime        @default(now())
+  order     Order           @relation(fields: [orderId], references: [id])
+  product   Product         @relation(fields: [productId], references: [id])
+  seller    Seller          @relation(fields: [sellerId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// SHIPMENTS
+
+model Shipment {
+  id      String @id @default(uuid())
+  orderId String
+
+  trackingNumber String @unique
+  carrier        String
+
+  status ShipmentStatus
+
+  shippedAt         DateTime?
+  estimatedDelivery DateTime?
+  deliveredAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  trackingEvents ShipmentTrackingEvent[]
+
+  @@index([orderId])
+}
+
+model ShipmentTrackingEvent {
+  id         String @id @default(uuid())
+  shipmentId String
+
+  eventStatus String
+  location    String
+
+  eventTime DateTime
+  createdAt DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  @@index([shipmentId])
+}
+
+// REVIEWS
+
+model Review {
+  id        String  @id @default(uuid())
+  productId String
+  userId    String
+  orderId   String?
+
+  rating Int
+  title  String?
+  body   String?
+
+  isVerifiedPurchase Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  images ReviewImage[]
+  videos ReviewVideo[]
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
+}
+
+model ReviewImage {
+  id       String @id @default(uuid())
+  reviewId String
+  imageUrl String
+
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id])
+}
+
+model ReviewVideo {
+  id       String @id @default(uuid())
+  reviewId String
+  videoUrl String
+
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id])
+}
+
+// PRODUCT RATING SUMMARY
+
+model ProductRatingSummary {
+  productId String @id
+
+  rating1Count Int
+  rating2Count Int
+  rating3Count Int
+  rating4Count Int
+  rating5Count Int
+
+  averageRating Decimal @db.Decimal(3, 2)
+  totalReviews  Int
+
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([averageRating])
+}
+
+// WATCH HISTORY
+
+model WatchHistory {
+  id        String @id @default(uuid())
+  userId    String
+  productId String
+
+  viewedAt DateTime @default(now()) // rename from createdAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+// Card Details
+
+model CardDetail {
+  id     String @id @default(uuid())
+  userId String
+
+  cardLast4 String // cardLast4/cardBrand come from payment provider (Stripe, Razorpay)
+  cardBrand String // never from user input. Add a comment to document this.
+
+  providerToken String
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model PaymentMethod {
+  id     String @id @default(uuid())
+  userId String
+
+  paymentType PaymentType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  transactions  TransactionDetail[]
+  orderPayments OrderPayment[]
+}
+
+model TransactionDetail {
+  id              String @id @default(uuid())
+  userId          String
+  paymentMethodId String
+
+  transactionId    String  @unique
+  transactionRefId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactionStatus TransactionStatus
+
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+
+  user          User           @relation(fields: [userId], references: [id])
+  orderPayments OrderPayment[]
+}
+
+// ORDER PAYMENTS
+
+model OrderPayment {
+  id                  String @id @default(uuid())
+  orderId             String
+  paymentMethodId     String
+  transactionDetailId String
+
+  amount Decimal @db.Decimal(10, 2)
+
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  order             Order             @relation(fields: [orderId], references: [id])
+  paymentMethod     PaymentMethod     @relation(fields: [paymentMethodId], references: [id])
+  transactionDetail TransactionDetail @relation(fields: [transactionDetailId], references: [id])
+
+  @@index([orderId])
+  @@index([paymentMethodId])
+}
+
+model ReturnPolicy {
+  id          String           @id @default(uuid())
+  name        String
+  type        ReturnPolicyType
+  returnDays  Int
+  description String?
+
+  // Conditions
+  requiresOriginalPackaging Boolean @default(false)
+  requiresAllAccessories    Boolean @default(false)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
