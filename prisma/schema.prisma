@@ -236,11 +236,16 @@ model Seller {
   contactEmail String @unique
   contactPhone String
 
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  password     String
+  refreshToken String?
+  isVarified   Boolean     @default(false)
+  isActive     Boolean     @default(true)
   // one to many
-  products   Product[]
-  orderItems OrderItem[]
+  products     Product[]
+  orderItems   OrderItem[]
 }
 
 // PRODUCTS
