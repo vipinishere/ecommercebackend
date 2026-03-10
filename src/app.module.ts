@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';  
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './users/users.module';
+import { SellerModule } from './seller/seller.module';
 import Joi from 'joi';
 
 @Module({
@@ -15,7 +16,7 @@ import Joi from 'joi';
         JWT_ACCESS_SECRET: Joi.string().required(),
         JWT_REFRESH_SECRET: Joi.string().required(),
       }),
-    }), UserModule
+    }), UserModule, SellerModule
   ],
   controllers: [AppController],
   providers: [AppService],
