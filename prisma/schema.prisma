@@ -241,7 +241,7 @@ model Seller {
 
   password     String
   refreshToken String?
-  isVarified   Boolean     @default(false)
+  isVerified   Boolean     @default(false)
   isActive     Boolean     @default(true)
   // one to many
   products     Product[]
