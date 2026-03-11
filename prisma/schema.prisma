@@ -378,8 +378,9 @@ model ProductPriceHistory {
 // SPECIFICATIONS
 
 model SpecificationGroup {
-  id   String @id @default(uuid())
-  name String
+  id          String  @id @default(uuid())
+  name        String
+  description String?
 
   createdAt  DateTime                 @default(now())
   attributes SpecificationAttribute[]
@@ -389,6 +390,8 @@ model SpecificationAttribute {
   id                    String                 @id @default(uuid())
   groupId               String
   name                  String
+  description           String?
+  unit                  String?
   dataType              dataType
   createdAt             DateTime               @default(now())
   group                 SpecificationGroup     @relation(fields: [groupId], references: [id])
