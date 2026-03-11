@@ -11,6 +11,8 @@ import { SpecificationModule } from './specification/specification.module';
 import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { OrderModule } from './order/order.module';
+import { WalletModule } from './wallet/wallet.module';
 import Joi from 'joi';
 
 @Module({
@@ -24,7 +26,7 @@ import Joi from 'joi';
         SELLER_JWT_ACCESS_SECRET: Joi.string().required(),
         SELLER_JWT_REFRESH_SECRET: Joi.string().required(),
       }),
-    }), UserModule, SellerModule, AdminModule, CategoryModule, SpecificationModule, ProductModule, CartModule, WishlistModule
+    }), UserModule, SellerModule, AdminModule, CategoryModule, SpecificationModule, ProductModule, CartModule, WishlistModule, OrderModule, WalletModule
   ],
   controllers: [AppController],
   providers: [AppService],
