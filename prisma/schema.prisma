@@ -69,6 +69,12 @@ enum TransactionStatus {
   FAILED
 }
 
+enum dataType {
+  TEXT
+  NUMBER
+  BOOLEAN
+}
+
 // USERS
 
 model User {
@@ -383,7 +389,7 @@ model SpecificationAttribute {
   id                    String                 @id @default(uuid())
   groupId               String
   name                  String
-  dataType              String
+  dataType              dataType
   createdAt             DateTime               @default(now())
   group                 SpecificationGroup     @relation(fields: [groupId], references: [id])
   categoryAttributes    CategoryAttribute[]

@@ -5,6 +5,9 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './users/users.module';
 import { SellerModule } from './seller/seller.module';
+import { AdminModule } from './admin/admin.module';
+import { CategoryModule } from './category/category.module';
+import { SpecificationModule } from './specification/specification.module';
 import Joi from 'joi';
 
 @Module({
@@ -18,7 +21,7 @@ import Joi from 'joi';
         SELLER_JWT_ACCESS_SECRET: Joi.string().required(),
         SELLER_JWT_REFRESH_SECRET: Joi.string().required(),
       }),
-    }), UserModule, SellerModule
+    }), UserModule, SellerModule, AdminModule, CategoryModule, SpecificationModule
   ],
   controllers: [AppController],
   providers: [AppService],
