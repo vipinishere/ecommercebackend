@@ -37,7 +37,7 @@ export class SellerService {
         businessName: dto.businessName,
         contactEmail: dto.contactEmail,
         contactPhone: dto.contactPhone,
-        password: dto.password
+        password: passwordHash
       },
       select: {
         id: true,
