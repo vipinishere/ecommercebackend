@@ -56,6 +56,11 @@ enum OrderStatus {
   RETURNED
 }
 
+enum PaymentTypeForWallet {
+  CARD
+  UPI
+}
+
 enum PaymentType {
   COD
   CARD
