@@ -10,6 +10,7 @@ import { CategoryModule } from './category/category.module';
 import { SpecificationModule } from './specification/specification.module';
 import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 import Joi from 'joi';
 
 @Module({
@@ -23,7 +24,7 @@ import Joi from 'joi';
         SELLER_JWT_ACCESS_SECRET: Joi.string().required(),
         SELLER_JWT_REFRESH_SECRET: Joi.string().required(),
       }),
-    }), UserModule, SellerModule, AdminModule, CategoryModule, SpecificationModule, ProductModule, CartModule
+    }), UserModule, SellerModule, AdminModule, CategoryModule, SpecificationModule, ProductModule, CartModule, WishlistModule
   ],
   controllers: [AppController],
   providers: [AppService],
