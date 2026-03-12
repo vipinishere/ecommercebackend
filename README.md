@@ -1,98 +1,118 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🛒 E-Commerce Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-ready, scalable e-commerce backend built with **NestJS**, **Prisma ORM**, and **PostgreSQL**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Tech Stack
 
-## Description
+- **Framework:** NestJS (TypeScript)
+- **Database:** PostgreSQL
+- **ORM:** Prisma 6.x
+- **Authentication:** JWT (Access + Refresh Token)
+- **Validation:** class-validator & class-transformer
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 👥 User Roles
 
-## Project setup
+| Role | Description |
+|---|---|
+| **User** | Browse, cart, wishlist, orders, reviews |
+| **Seller** | Manage products, variants, specifications |
+| **Admin** | Manage categories, attributes, shipments |
+| **Super Admin** | Full access including destructive operations |
 
-```bash
-$ npm install
+## 📦 Modules
+
+| Module | APIs | Description |
+|---|---|---|
+| Auth | 4 | Register, Login, Refresh, Logout |
+| User | 9 | Profile, Password, Addresses |
+| Seller | 8 | Seller auth, Products, Orders |
+| Admin | 5 | Admin auth, Profile |
+| Category | 8 | Tree structure, Attribute assignment |
+| Specification | 9 | Groups, Attributes, DataTypes |
+| Product | 12 | CRUD, Variants, Images, Specifications |
+| Cart | 5 | Add, Update, Remove, Clear |
+| Wishlist | 7 | CRUD, Move to Cart |
+| Order | 7 | Checkout, Buy Now, Cancel, Return, Track |
+| Wallet | 4 | Balance, Transactions, Add Money |
+| Shipment | 5 | Create, Track, Status Updates |
+| Review | 5 | CRUD, Verified Purchase, Rating Summary |
+| **Total** | **93** | |
+
+## ✨ Key Features
+
+- 🔐 Separate JWT auth for User, Seller and Admin
+- 🌳 Nested category tree with attribute inheritance
+- 📦 Product specifications per category (Admin defined, Seller filled)
+- 🛒 Cart with stock validation and quantity management
+- 💳 Multi payment support — COD, Wallet, UPI, Card
+- 🔄 Order lifecycle — Place, Pack, Ship, Deliver, Cancel, Return
+- 📍 Shipment tracking with event history
+- ⭐ Review system with verified purchase badge and rating summary
+- 💰 Wallet with transaction history and auto refund on cancel/return
+- 🔁 Refresh token rotation for all three user types
+
+## 🗂️ Project Structure
+```
+src/
+├── auth/
+├── user/
+├── seller/
+├── admin/
+├── category/
+├── specification/
+├── product/
+├── cart/
+├── wishlist/
+├── order/
+├── wallet/
+├── shipment/
+├── review/
+└── prisma/
 ```
 
-## Compile and run the project
+## ⚙️ Environment Variables
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
 
-```bash
-# development
-$ npm run start
+JWT_ACCESS_SECRET=your_access_secret
+JWT_REFRESH_SECRET=your_refresh_secret
 
-# watch mode
-$ npm run start:dev
+SELLER_JWT_ACCESS_SECRET=your_seller_access_secret
+SELLER_JWT_REFRESH_SECRET=your_seller_refresh_secret
 
-# production mode
-$ npm run start:prod
+ADMIN_JWT_ACCESS_SECRET=your_admin_access_secret
+ADMIN_JWT_REFRESH_SECRET=your_admin_refresh_secret
 ```
 
-## Run tests
-
+## 🛠️ Installation
 ```bash
-# unit tests
-$ npm run test
+# Clone the repository
+git clone https://github.com/yourusername/ecommerce-backend.git
 
-# e2e tests
-$ npm run test:e2e
+# Install dependencies
+cd ecommerce-backend
+npm install
 
-# test coverage
-$ npm run test:cov
+# Setup environment variables
+cp .env.example .env
+
+# Run database migrations
+npx prisma migrate dev
+
+# Start development server
+npm run start:dev
 ```
 
-## Deployment
+## 📝 API Documentation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Base URL: `http://localhost:3000`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Auth Type | Header |
+|---|---|
+| User | `Authorization: Bearer <userAccessToken>` |
+| Seller | `Authorization: Bearer <sellerAccessToken>` |
+| Admin | `Authorization: Bearer <adminAccessToken>` |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## 📄 License
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT License
