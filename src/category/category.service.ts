@@ -193,6 +193,7 @@ export class CategoryService {
     const attribute = await this.prisma.specificationAttribute.findUnique({
       where: { id: attributeId },
     });
+    console.log(attribute)
     if (!attribute) throw new NotFoundException('Attribute not found');
 
     // upsert — if already assigned, update isRequired
