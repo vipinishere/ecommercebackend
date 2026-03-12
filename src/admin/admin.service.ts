@@ -157,7 +157,7 @@ export class AdminService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('ADMIN_JWT_ACCESS_SECRET'),
-        expiresIn: '15m',
+        expiresIn: '1d',
       }),
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('ADMIN_JWT_REFRESH_SECRET'),
